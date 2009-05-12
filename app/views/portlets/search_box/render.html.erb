@@ -1,0 +1,4 @@
+<% form_tag @search_engine.path, :method=>'GET' do %>
+    <%= text_field_tag 'query' %>
+    <%= submit_tag 'Go' %>
+<% end %>
