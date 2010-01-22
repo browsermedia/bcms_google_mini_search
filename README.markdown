@@ -55,8 +55,8 @@ the module work, you will have to configure two portlets.
 1. In your sitemap, create a new section called 'Search', with a path '/search'.
 2. Create a page called 'Search Results', with a path '/search/search-results'.
 3. On that page, add a new 'Google Mini Search Engine' portlet. Keep the default for most fields.
-4. In the Service URL, field, enter in the domain name to your google mini server (i.e.  http://google.mini.mysite.com)
-5. In the Colleciton Name field, enter the same name you gave your collection in B.2.2. (i.e. MYSITE)
+4. In the Service URL, field, enter in the domain name to your google mini server (i.e.  http://google.mini.mysite.com). Note: This URL should be just the domain, i.e. no /search.
+5. In the Collection Name field, enter the same name you gave your collection in B.2.2. (i.e. MYSITE)
 6. In the Front End Name field, enter the same name you have your frontend in B.3.2 (i.e. MYSITE_frontend)
 7. Make sure the 'path' attribute is the same as the page you are adding  the portlet to (i.e. /search/search-results
 8. Save the portlet
