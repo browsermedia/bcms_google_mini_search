@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["BrowserMedia"]
   s.date = %q{2010-04-24}
+  s.description = %q{Allows developers to integrate Google Mini or Google Search appliance into their CMS sites. Can be used to fetch search results and format them.}
   s.email = %q{github@browsermedia.com}
   s.extra_rdoc_files = [
     "README.markdown"
