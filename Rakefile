@@ -19,7 +19,7 @@ begin
     spec.author = "BrowserMedia" 
     spec.email = "github@browsermedia.com" 
     spec.homepage = "http://www.browsercms.org" 
-    spec.files += Dir["app/**/*"]  
+    spec.files = Dir["app/**/*"]  
     spec.files += Dir["lib/bcms_google_mini_search.rb"]
     spec.files += Dir["lib/bcms_google_mini_search/*"]
     spec.files += Dir["rails/init.rb"]
