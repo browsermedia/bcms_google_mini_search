@@ -58,11 +58,13 @@ class SearchResult
 
   def self.build_mini_url(options, query)
     portlet = find_search_engine_portlet(options)
-    url = "#{portlet.service_url}/search?q=#{query}&output=xml_no_dtd&client=#{portlet.front_end_name}&site=#{portlet.collection_name}&filter=0"
+    encoded_query = CGI::escape(query)
+    # encoded_query = query
+    url = "#{portlet.service_url}/search?q=#{encoded_query}&output=xml_no_dtd&client=#{portlet.front_end_name}&site=#{portlet.collection_name}&filter=0"
     if options[:start]
       url = url + "&start=#{options[:start]}"
     end
-    return url
+    return url    
   end
 
   def self.find_search_engine_portlet(options)

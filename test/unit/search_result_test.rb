@@ -293,6 +293,10 @@ EOF
     assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&start=100", url
 
   end
-
+  
+  test "Handles multiword queries" do
+    url = SearchResult.build_mini_url({}, "One Two")
+    assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0", url
+  end
 
 end
