@@ -53,6 +53,8 @@ EOF
 EOF
     @large_xml_doc = REXML::Document.new(@large_results_set)
 
+    
+
   end
 
   test "Parse result count from google mini results xml." do
@@ -66,8 +68,8 @@ EOF
 EOF
     empty_doc = REXML::Document.new xml
     assert_equal 35, SearchResult.parse_results_count(empty_doc)
-    assert_equal 35, SearchResult.convert_to_results(empty_doc).results_count
-    assert_equal 4, SearchResult.convert_to_results(empty_doc).num_pages
+    assert_equal 35, SearchResult.parse_xml(empty_doc).results_count
+    assert_equal 4, SearchResult.parse_xml(empty_doc).num_pages
 
   end
 
@@ -99,7 +101,7 @@ EOF
 
   test "Parse result set" do
 
-    results = SearchResult.parse_results(@xml_doc)
+    results = SearchResult.parse_hits(@xml_doc)
     assert_equal 2, results.size
 
     assert_equal "1", results[0].number
@@ -128,7 +130,7 @@ EOF
   end
 
   test "Calculates current page based on total results and start" do
-    results = SearchResult::PagingResults.new
+    results = SearchResult::QueryResult.new
     results.start = 0
     assert_equal 1, results.current_page
 
@@ -143,7 +145,7 @@ EOF
   end
 
   test "Next start" do
-    r = SearchResult::PagingResults.new
+    r = SearchResult::QueryResult.new
     r.start = 0
     assert_equal 10, r.next_start
     r.start = 10
@@ -216,7 +218,7 @@ EOF
   end
 
   test "current_page should check to see if the current page matches" do
-    results = SearchResult::PagingResults.new
+    results = SearchResult::QueryResult.new
     results.start = 0
 
     assert_equal true, results.current_page?(1)   
@@ -227,7 +229,7 @@ EOF
   end
 
   test "Path to next page" do
-    results = SearchResult::PagingResults.new
+    results = SearchResult::QueryResult.new
     results.start = 0
     results.path = "/search/search-results"
     results.query = "X"
@@ -236,7 +238,7 @@ EOF
   end
 
   test "Path to previous page" do
-    results = SearchResult::PagingResults.new
+    results = SearchResult::QueryResult.new
     results.start = 20
     results.path = "/search/search-results"
     results.query = "X"
@@ -245,18 +247,18 @@ EOF
   end
 
   test "Sets path to default search-results" do
-    results = SearchResult::PagingResults.new
+    results = SearchResult::QueryResult.new
     assert_equal "/search/search-results", results.path
   end
 
   test "Setting path overrides the defaults" do
-    results = SearchResult::PagingResults.new
+    results = SearchResult::QueryResult.new
     results.path = "/other"
     assert_equal "/other", results.path
   end
 
   test "page_path" do
-    results = SearchResult::PagingResults.new
+    results = SearchResult::QueryResult.new
     results.query = "X"
     
     assert_equal "/search/search-results?query=X&start=0", results.page_path(1)
@@ -299,4 +301,52 @@ EOF
     assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0", url
   end
 
+  test "Handles keymatches in results" do
+    @xml_with_keymatches = <<XML
+    <GSP>
+        <GM>
+          <GL>http://url1.org</GL>
+          <GD>URL 1</GD>
+        </GM>
+        <GM>
+          <GL>http://url2.org</GL>
+          <GD>URL 2</GD>
+        </GM>
+        <RES>
+          <M>35</M>
+          <R N="1">
+            <U>http://someurl.com</U>
+            <T>TITLE</T>
+            <S>BLURB</S>
+            <HAS>
+              <C SZ="1k" />
+            </HAS>
+          </R>
+          <R N="2">
+            <U>http://someurl2.com</U>
+            <T>TITLE 2</T>
+            <S>BLURB 2</S>
+            <HAS>
+              <C SZ="2k"/>
+            </HAS>
+          </R>
+        </RES>
+      </GSP>
+XML
+    @results_with_keymatches =  REXML::Document.new @xml_with_keymatches
+    
+    result = SearchResult.parse_xml @results_with_keymatches
+
+    assert_equal true, result.key_matches?
+    assert_equal 2, result.key_matches.size
+    assert_equal "http://url1.org", result.key_matches[0].url
+    assert_equal "URL 1", result.key_matches[0].title
+    assert_equal "http://url2.org", result.key_matches[1].url
+    assert_equal "URL 2", result.key_matches[1].title
+  end
+
+  test "Handles results with no keymatches" do
+    result = SearchResult.parse_xml @xml_doc
+    assert_equal false, result.key_matches?
+  end
 end

@@ -2,7 +2,14 @@
 For '<%= @results.query %>', found <%= @results.results_count %> results. <br />
 <% if @results.previous_page? %><%= link_to h("< Back"), @results.previous_page_path %><% end %>
 <% if @results.next_page? %><%= link_to h("Next >"), @results.next_page_path %><% end %>
-<ul>
+<% if @results.key_matches? %>
+    <ul class="key_matches">
+    <% @results.key_matches.each do |match| %>
+        <li><%= link_to match.title, match.url %></li>    
+    <% end %>
+    </ul>
+<% end %>
+<ul class="search_results">
   <% @results.each do |result|%>
     <li>
         <%= result.number %> <%= link_to result.title, result.url,  :class=>"search_result_title" %><br />

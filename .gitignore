@@ -8,4 +8,4 @@ db/schema.rb
 .dotest
 tmp/restart.txt
 public/cache
-.idea/
+.idea/*
