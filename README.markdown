@@ -1,13 +1,19 @@
 # Google Mini Search Module
 
-This module allows BrowserCMS to integrate with a Google Mini Search Appliance. Google Mini is a standalone search
-server, which can be configured to crawl your website. This module submits queries to a Mini server, and formats the results.
+This module allows BrowserCMS to integrate with a Google Search Appliance (Mini or GSA). Google Search Appliance is a standalone search
+server, which can be configured to crawl your website. This module submits queries to a GSA/Mini server, and formats the results.
 It consists of the following two portlets.
 
 1. Search Box - Displays an input box that submits a search query.
 2. Google Mini Search Results Portlet - Sends query to the Mini, formats the XML response and displays the results.
 
-Note: This module assume the BrowserCMS web site owner has access to their own Google Mini server, either hosted by
+Features:
+1. Allows for formatted results of GSA search results.
+2. Will display Key Matches (as of 1.1)
+3. Will display Synonyms/Related Queries (as of 1.1)
+4. Allows conditional overriding of collections (i.e. by default it will search one collection, but a 'site=OTHER_COLLECTION' param can be passed to override that)
+
+Note: This module assume the BrowserCMS web site owner has access to their own GSA/Google Mini server, either hosted by
 themselves or a third party service.
 
 ## A. Instructions
