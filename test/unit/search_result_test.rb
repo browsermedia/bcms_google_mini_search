@@ -294,6 +294,15 @@ EOF
 
   end
 
+  test "Explicitly passing a collection in will query with that rather than a default collection" do
+    portlet = GoogleMiniSearchEnginePortlet.new(
+            :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
+            :collection_name => "COLLECT", :front_end_name => "FRONT_END")
+
+    url = SearchResult.build_mini_url({:portlet => portlet, :site=>"ANOTHER_COLLECTION"}, "STUFF")
+    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=ANOTHER_COLLECTION&filter=0", url
+  end
+
   test "Handles multiword queries" do
     url = SearchResult.build_mini_url({}, "One Two")
     assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0", url
