@@ -41,6 +41,7 @@ class SearchResult
     hits = parse_hits(xml_doc)
     results = QueryResult.new(hits)
     results.key_matches= parse_key_matches(xml_doc)
+    results.synonyms = parse_synonyms(xml_doc, results)
     results.results_count = parse_results_count(xml_doc)
     results.num_pages = calculate_results_pages(results.results_count)
     results.start = options[:start] ? options[:start] : 0
@@ -96,10 +97,21 @@ class SearchResult
     matches
   end
 
+  def self.parse_synonyms(xml_doc, query_result)
+    synonyms = []
+    xml_doc.elements.each('GSP/Synonyms/OneSynonym') do |ele|
+      synonym = Synonym.new
+      synonym.query = ele.attributes["q"]
+      synonym.label = ele.text
+      synonym.query_result = query_result
+      synonyms << synonym
+    end
+    synonyms
+  end
   # Represents the entire result of the query
   class QueryResult < Array
 
-    attr_accessor :results_count, :num_pages, :current_page, :start, :query, :pages, :key_matches
+    attr_accessor :results_count, :num_pages, :current_page, :start, :query, :pages, :key_matches, :synonyms
     attr_writer :path
 
     def path
@@ -154,9 +166,26 @@ class SearchResult
     def key_matches?
       !key_matches.empty?
     end
+
+    def synonyms?
+      !synonyms.empty?
+    end
   end
 
+  # Sometimes refered to as 'Featured Links', though the GSA UI uses the KeyMatch
   class KeyMatch
     attr_accessor :url, :title
   end
+
+  # AKA Related Query in Google UI
+  class Synonym
+    attr_accessor :query, :label, :query_result
+
+    # Return the url that should be
+    def url
+      "#{query_result.path}?query=#{query}"
+    end
+  end
+
+
 end

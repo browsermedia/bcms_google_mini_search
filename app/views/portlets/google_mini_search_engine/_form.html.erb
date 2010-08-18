@@ -3,4 +3,4 @@
 <%= f.cms_text_field :service_url, :default_value=> "http://", :instructions => "Full Domain name where the Google Mini server is hosted, i.e. 'http://mini.somedomain.com'." %>
 <%= f.cms_text_field :collection_name, :instructions => "Copy the name of the Collection from Google Mini here." %>
 <%= f.cms_text_field :front_end_name, :instructions => "Copy the name of the Collection front end from Google Mini here." %>
-<%= f.cms_text_area :template, :default_value => @block.class.default_template %>
+<%= f.cms_template_editor :template %>

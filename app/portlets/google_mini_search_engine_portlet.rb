@@ -1,5 +1,7 @@
 class GoogleMiniSearchEnginePortlet < Portlet
-    
+
+  enable_template_editor false
+  
   def render
     @query = params[:query]
     @start = params[:start] ? params[:start].to_i : 0

@@ -1,4 +1,5 @@
 # Settings specified here will take precedence over those in config/environment.rb
+require 'test/unit' # This must be loaded before mocha so that methods like mock() will work.
 config.gem 'mocha'
 
 # The test environment is used exclusively to run your application's

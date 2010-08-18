@@ -9,6 +9,13 @@ For '<%= @results.query %>', found <%= @results.results_count %> results. <br />
     <% end %>
     </ul>
 <% end %>
+<% if @results.synonyms? %>
+    <span class="synonyms">You could also try:
+    <% @results.synonyms.each do |synonym| %>
+        <%= link_to synonym.label, synonym.url %>    
+    <% end %>
+    </span>
+<% end %>
 <ul class="search_results">
   <% @results.each do |result|%>
     <li>

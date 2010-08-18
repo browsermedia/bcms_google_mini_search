@@ -3,7 +3,7 @@ require File.join(File.dirname(__FILE__), '/../test_helper')
 class SearchResultTest < ActiveSupport::TestCase
 
   def setup
-     @xml_string =  <<EOF
+    @xml_string =  <<EOF
       <GSP>
         <RES>
           <M>2</M>
@@ -53,7 +53,6 @@ EOF
 EOF
     @large_xml_doc = REXML::Document.new(@large_results_set)
 
-    
 
   end
 
@@ -116,8 +115,8 @@ EOF
     assert_equal "BLURB 2", results[1].description
     assert_equal "2k", results[1].size
   end
-  
-  
+
+
   test "Calculates the results pages" do
     assert_equal 1, SearchResult.calculate_results_pages(9)
     assert_equal 1, SearchResult.calculate_results_pages(10)
@@ -173,7 +172,6 @@ EOF
   end
 
 
-
   test "Find results starts on page 2, if a start is specified" do
     SearchResult.expects(:fetch_xml_doc).with("therapy", :start=>10).returns(@large_xml_doc)
 
@@ -221,7 +219,7 @@ EOF
     results = SearchResult::QueryResult.new
     results.start = 0
 
-    assert_equal true, results.current_page?(1)   
+    assert_equal true, results.current_page?(1)
     assert_equal false, results.current_page?(2)
     assert_equal false, results.current_page?(3)
     assert_equal false, results.current_page?(4)
@@ -260,7 +258,7 @@ EOF
   test "page_path" do
     results = SearchResult::QueryResult.new
     results.query = "X"
-    
+
     assert_equal "/search/search-results?query=X&start=0", results.page_path(1)
     assert_equal "/search/search-results?query=X&start=10", results.page_path(2)
     assert_equal "/search/search-results?query=X&start=20", results.page_path(3)
@@ -270,7 +268,7 @@ EOF
 
   test "Portlet attributes are used to look up path" do
     portlet = GoogleMiniSearchEnginePortlet.new(:name=>"Engine", :path => "/engine")
-    SearchResult.expects(:fetch_xml_doc).with("therapy", {:portlet=> portlet }).returns(@xml_doc)
+    SearchResult.expects(:fetch_xml_doc).with("therapy", {:portlet=> portlet}).returns(@xml_doc)
 
     results = SearchResult.find("therapy", {:portlet=> portlet})
 
@@ -279,14 +277,14 @@ EOF
 
   test "Default path is used if no portlet specified" do
     SearchResult.expects(:fetch_xml_doc).with("therapy", {}).returns(@xml_doc)
-    results = SearchResult.find("therapy", { })
+    results = SearchResult.find("therapy", {})
     assert_equal "/search/search-results", results.path
   end
 
   test "Uses service URL from portlet" do
     portlet = GoogleMiniSearchEnginePortlet.new(
             :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
-                    :collection_name => "COLLECT", :front_end_name => "FRONT_END")
+            :collection_name => "COLLECT", :front_end_name => "FRONT_END")
 
     url = SearchResult.build_mini_url({:portlet => portlet}, "STUFF")
     assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0", url
@@ -295,7 +293,7 @@ EOF
     assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&start=100", url
 
   end
-  
+
   test "Handles multiword queries" do
     url = SearchResult.build_mini_url({}, "One Two")
     assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0", url
@@ -334,7 +332,7 @@ EOF
       </GSP>
 XML
     @results_with_keymatches =  REXML::Document.new @xml_with_keymatches
-    
+
     result = SearchResult.parse_xml @results_with_keymatches
 
     assert_equal true, result.key_matches?
@@ -349,4 +347,64 @@ XML
     result = SearchResult.parse_xml @xml_doc
     assert_equal false, result.key_matches?
   end
+
+  test "Handle Synonyms / Related Queries" do
+    xml_with_synonyms = <<XML
+    <GSP>
+        <Synonyms>
+          <OneSynonym q="Query 1">Label 1</OneSynonym>
+          <OneSynonym q="Query 2">Label 2</OneSynonym>
+        </Synonyms>
+        <RES>
+          <M>35</M>
+          <R N="1">
+            <U>http://someurl.com</U>
+            <T>TITLE</T>
+            <S>BLURB</S>
+            <HAS>
+              <C SZ="1k" />
+            </HAS>
+          </R>
+          <R N="2">
+            <U>http://someurl2.com</U>
+            <T>TITLE 2</T>
+            <S>BLURB 2</S>
+            <HAS>
+              <C SZ="2k"/>
+            </HAS>
+          </R>
+        </RES>
+      </GSP>
+XML
+    xml_doc_with_synonyms =  REXML::Document.new xml_with_synonyms
+
+    result = SearchResult.parse_xml xml_doc_with_synonyms
+
+    result.expects(:path).returns("/search").twice
+    assert_equal true, result.synonyms?
+    assert_equal 2, result.synonyms.size
+    assert_equal "Label 1", result.synonyms[0].label
+    assert_equal "Query 1", result.synonyms[0].query
+    assert_equal "/search?query=Query 1", result.synonyms[0].url
+    assert_equal "Label 2", result.synonyms[1].label
+    assert_equal "Query 2", result.synonyms[1].query
+    assert_equal "/search?query=Query 2", result.synonyms[1].url
+
+  end
+
+  test "Handles results with no Synonyms" do
+    result = SearchResult.parse_xml @xml_doc
+    assert_equal false, result.synonyms?                                       
+  end
+
+  test "Calculate URL for Related Queries/Synonyms" do
+    syn = SearchResult::Synonym.new
+    syn.query = "Testing"
+    mock_result = mock()
+    mock_result.expects(:path).returns("/random")
+    syn.query_result = mock_result
+    assert_equal "/random?query=Testing", syn.url
+  end
+
+
 end
