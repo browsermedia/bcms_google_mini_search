@@ -7,6 +7,7 @@ class SearchResult
   # a paging results of Search Results.
   #
   def self.find(query, options={})
+    return QueryResult.new unless query
     xml_doc = fetch_xml_doc(query, options)
     results = parse_xml(xml_doc, options)
     results.query = query
@@ -119,6 +120,17 @@ class SearchResult
     attr_accessor :results_count, :num_pages, :current_page, :start, :query, :pages, :key_matches, :synonyms
     attr_writer :path
 
+    def initialize(array=[])
+      # Need to set defaults so an empty result set works.
+      self.start = 0
+      self.results_count=0
+      self.key_matches = []
+      self.synonyms = []
+      self.num_pages = 1
+      super(array)
+
+    end
+    
     def path
       @path ? @path : "/search/search-results"
     end

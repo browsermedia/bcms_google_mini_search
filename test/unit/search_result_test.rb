@@ -415,5 +415,14 @@ XML
     assert_equal "/random?query=Testing", syn.url
   end
 
-
+  test "No query = empty results" do
+    result = SearchResult.find(nil)
+    assert_equal 0, result.size
+    assert_equal 0, result.start
+    assert_equal false, result.next_page?
+    assert_equal false, result.previous_page?
+    assert_equal false, result.key_matches?
+    assert_equal false, result.synonyms?
+    assert_equal [], result.pages
+  end
 end
