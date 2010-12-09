@@ -52,8 +52,7 @@ EOF
       </GSP>
 EOF
     @large_xml_doc = REXML::Document.new(@large_results_set)
-
-
+    
   end
 
   test "Parse result count from google mini results xml." do
@@ -425,4 +424,45 @@ XML
     assert_equal false, result.synonyms?
     assert_equal [], result.pages
   end
+  
+  test "Search results for PDF's that have no size" do
+    pdf_results = <<EOF
+      <GSP>
+        <RES>
+          <M>35</M>
+          <R N="1">
+            <U>http://someurl.com</U>
+            <T>TITLE</T>
+            <S>BLURB</S>
+            <HAS>
+              <C SZ="1k" />
+            </HAS>
+          </R>
+          <R N="2">
+            <U>http://someurl2.com</U>
+            <T>TITLE 2</T>
+            <S>BLURB 2</S>
+            <HAS>
+              <L/>
+            </HAS>
+          </R>
+        </RES>
+      </GSP>
+EOF
+      xml_doc = REXML::Document.new(pdf_results)
+      results = SearchResult.parse_xml xml_doc
+      assert_equal 2, results.size
+
+      assert_equal "1", results[0].number
+      assert_equal "http://someurl.com", results[0].url
+      assert_equal "TITLE", results[0].title
+      assert_equal "BLURB", results[0].description
+      assert_equal "1k", results[0].size
+
+      assert_equal "2", results[1].number
+      assert_equal "http://someurl2.com", results[1].url
+      assert_equal "TITLE 2", results[1].title
+      assert_equal "BLURB 2", results[1].description
+      assert_equal "", results[1].size
+    end
 end

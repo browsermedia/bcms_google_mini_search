@@ -31,7 +31,9 @@ class SearchResult
       result.title = ele.elements["T"].text
       result.url = ele.elements["U"].text
       result.description = ele.elements["S"].text
-      result.size = ele.elements["HAS/C"].attributes["SZ"]
+      
+      doc_size_ele = ele.elements["HAS/C"]
+      result.size = doc_size_ele ? doc_size_ele.attributes["SZ"] : ""
 
       results << result
     end

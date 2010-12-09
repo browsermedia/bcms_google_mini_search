@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bcms_google_mini_search}
-  s.version = "1.1.0"
+  s.version = "1.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["BrowserMedia"]
-  s.date = %q{2010-08-18}
+  s.date = %q{2010-12-09}
   s.description = %q{Allows developers to integrate Google Mini or Google Search Appliance into their CMS sites. Can be used to fetch search results and format them.}
   s.email = %q{github@browsermedia.com}
   s.extra_rdoc_files = [
