@@ -1,3 +1,5 @@
+require 'rexml/document'
+
 class SearchResult
 
   attr_accessor :number, :title, :url, :description, :size
