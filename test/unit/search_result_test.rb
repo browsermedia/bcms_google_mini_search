@@ -205,14 +205,7 @@ EOF
     assert_equal [], results.pages
   end
 
-  test "Behavior of ranges" do
-    c = 0
-    (1..4).each_with_index do |i, count|
-      assert_equal count + 1, i
-      c = count
-    end
-    assert_equal 3, c
-  end
+
 
   test "current_page should check to see if the current page matches" do
     results = SearchResult::QueryResult.new
@@ -225,45 +218,6 @@ EOF
 
   end
 
-  test "Path to next page" do
-    results = SearchResult::QueryResult.new
-    results.start = 0
-    results.path = "/search/search-results"
-    results.query = "X"
-
-    assert_equal "/search/search-results?query=X&start=10", results.next_page_path
-  end
-
-  test "Path to previous page" do
-    results = SearchResult::QueryResult.new
-    results.start = 20
-    results.path = "/search/search-results"
-    results.query = "X"
-
-    assert_equal "/search/search-results?query=X&start=10", results.previous_page_path
-  end
-
-  test "Sets path to default search-results" do
-    results = SearchResult::QueryResult.new
-    assert_equal "/search/search-results", results.path
-  end
-
-  test "Setting path overrides the defaults" do
-    results = SearchResult::QueryResult.new
-    results.path = "/other"
-    assert_equal "/other", results.path
-  end
-
-  test "page_path" do
-    results = SearchResult::QueryResult.new
-    results.query = "X"
-
-    assert_equal "/search/search-results?query=X&start=0", results.page_path(1)
-    assert_equal "/search/search-results?query=X&start=10", results.page_path(2)
-    assert_equal "/search/search-results?query=X&start=20", results.page_path(3)
-    assert_equal "/search/search-results?query=X&start=30", results.page_path(4)
-
-  end
 
   test "Portlet attributes are used to look up path" do
     portlet = GoogleMiniSearchEnginePortlet.new(:name=>"Engine", :path => "/engine")
@@ -305,6 +259,16 @@ EOF
   test "Handles multiword queries" do
     url = SearchResult.build_mini_url({}, "One Two")
     assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0", url
+  end
+
+  test "sort is added to google mini query" do
+    url = SearchResult.build_mini_url({:sort=>"XYZ"}, "STUFF")
+    assert_equal "/search?q=STUFF&output=xml_no_dtd&client=&site=&filter=0&sort=XYZ", url
+  end
+
+  test "sort params are escaped" do
+    url = SearchResult.build_mini_url({:sort=>"date:D:S:d1"}, "STUFF")
+    assert_equal "/search?q=STUFF&output=xml_no_dtd&client=&site=&filter=0&sort=date%3AD%3AS%3Ad1", url
   end
 
   test "Handles keymatches in results" do
@@ -464,8 +428,61 @@ EOF
       assert_equal "TITLE 2", results[1].title
       assert_equal "BLURB 2", results[1].description
       assert_equal "", results[1].size
-    end
+  end
+
+
 end
+
+class SearchPathsTest < ActiveSupport::TestCase
+
+  def setup
+    @results = SearchResult::QueryResult.new
+    @results.start = 0
+    @results.path = "/search/search-results"
+    @results.query = "X"
+  end
+
+  test "sort by date" do
+    assert_equal "#{@results.path}?query=#{@results.query}&sort=#{SearchResult::QueryResult::SORT_BY_DATE_PARAM}", @results.sort_by_date_path
+  end
+
+  test "sort by relevance" do
+    assert  @results.sort_by_relevance_path != @results.sort_by_date_path, "Paths should not be the same."
+    assert_equal "#{@results.path}?query=#{@results.query}&sort=#{SearchResult::QueryResult::SORT_BY_RELEVANCE_PARAM}", @results.sort_by_relevance_path
+  end
+
+  test "Path to next page" do
+    assert_equal "/search/search-results?query=X&start=10", @results.next_page_path
+  end
+
+  test "Path to previous page" do
+    @results.start = 20
+    assert_equal "/search/search-results?query=X&start=10", @results.previous_page_path
+  end
+
+  test "Sets path to default search-results" do
+    assert_equal "/search/search-results", @results.path
+  end
+
+  test "Setting path overrides the defaults" do
+    @results.path = "/other"
+    assert_equal "/other", @results.path
+  end
+
+  test "page_path" do
+    assert_equal "/search/search-results?query=X&start=0", @results.page_path(1)
+    assert_equal "/search/search-results?query=X&start=10", @results.page_path(2)
+    assert_equal "/search/search-results?query=X&start=20", @results.page_path(3)
+    assert_equal "/search/search-results?query=X&start=30", @results.page_path(4)
+  end
+
+  test "sorting_by_date?" do
+    assert_equal true, @results.sorting_by_date?({:sort=>SearchResult::QueryResult::SORT_BY_DATE_PARAM})
+    assert_equal false, @results.sorting_by_date?({:sort=>SearchResult::QueryResult::SORT_BY_RELEVANCE_PARAM})
+    assert_equal false, @results.sorting_by_date?({})
+  end
+end
+
 
 class PagingTest < ActiveSupport::TestCase
 
@@ -473,6 +490,16 @@ class PagingTest < ActiveSupport::TestCase
     @results = SearchResult::QueryResult.new
     and_the_max_number_pages_is 100
   end
+
+  test "Behavior of Ruby Ranges" do
+      c = 0
+      (1..4).each_with_index do |i, count|
+        assert_equal count + 1, i
+        c = count
+      end
+      assert_equal 3, c
+    end
+
 
   test "When on page 1, show links for pages 1 - 10" do
     when_current_page_is(1)

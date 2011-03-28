@@ -73,6 +73,11 @@ class SearchResult
     if options[:start]
       url = url + "&start=#{options[:start]}"
     end
+
+    if options[:sort]
+      url += "&sort=#{CGI::escape(options[:sort])}"
+    end
+
     return url    
   end
 
@@ -89,6 +94,7 @@ class SearchResult
     # Turns off automatic results filter (filter=0), which when set to 1, allows mini to reduces the # of similar/duplicate results,
     # but makes it hard to determine the total # of results.
     url = build_mini_url(options, query)
+    Rails.logger.warn "Querying GSA/Mini @ #{url}"
     response = Net::HTTP.get(URI.parse(url))
     xml_doc = REXML::Document.new(response)
     return xml_doc
@@ -121,6 +127,10 @@ class SearchResult
 
     attr_accessor :results_count, :num_pages, :current_page, :start, :query, :pages, :key_matches, :synonyms
     attr_writer :path
+
+    # For what these codes mean, see http://code.google.com/apis/searchappliance/documentation/46/xml_reference.html#request_sort
+    SORT_BY_DATE_PARAM = "date:D:S:d1"
+    SORT_BY_RELEVANCE_PARAM = "date:D:L:d1"
 
     def initialize(array=[])
       # Need to set defaults so an empty result set works.
@@ -172,6 +182,24 @@ class SearchResult
     def current_page
       return page = start / 10 + 1 if start
       1
+    end
+
+    # Determines the current Query is sorting by date.
+    #
+    # @param [Hash] params The query parameter from the search page. (same as Rails params)
+    def sorting_by_date?(params)
+      params[:sort] == SearchResult::QueryResult::SORT_BY_DATE_PARAM
+    end
+    # Return the path to sort the current search results by date.
+    #
+    # Based on http://code.google.com/apis/searchappliance/documentation/46/xml_reference.html#request_sort
+    def sort_by_date_path
+      "#{path}?query=#{query}&sort=#{SORT_BY_DATE_PARAM}"
+    end
+
+    # Returns the path to sort the current results by relevance (inverse of sort_by_date_path).
+    def sort_by_relevance_path
+      "#{path}?query=#{query}&sort=#{SORT_BY_RELEVANCE_PARAM}"
     end
 
     def next_page_path

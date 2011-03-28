@@ -1,5 +1,7 @@
 <h2>Search Results</h2>
 For '<%= @results.query %>', found <%= @results.results_count %> results. <br />
+<%= link_to_unless @results.sorting_by_date?(params), "Sort by Date", @results.sort_by_date_path %> /
+<%= link_to_if @results.sorting_by_date?(params), "Sort by Relevance", @results.sort_by_relevance_path %> <br />
 <% if @results.previous_page? %><%= link_to h("< Back"), @results.previous_page_path %><% end %>
 <% if @results.next_page? %><%= link_to h("Next >"), @results.next_page_path %><% end %>
 <% if @results.key_matches? %>
