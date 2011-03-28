@@ -466,3 +466,55 @@ EOF
       assert_equal "", results[1].size
     end
 end
+
+class PagingTest < ActiveSupport::TestCase
+
+  def setup
+    @results = SearchResult::QueryResult.new
+    and_the_max_number_pages_is 100
+  end
+
+  test "When on page 1, show links for pages 1 - 10" do
+    when_current_page_is(1)
+    assert_equal (1..10), @results.pages
+  end
+
+  test "When on page 11, show links for pages 1-20" do
+    when_current_page_is(11)
+    assert_equal (1..20), @results.pages
+  end
+
+  test "When on page 12, show links for pages 2-22" do
+    when_current_page_is 12
+    assert_equal (2..21), @results.pages
+  end
+
+  test "When less than 10 pages only show up to last page" do
+    when_current_page_is 1
+    and_the_max_number_pages_is 4
+
+    assert_equal (1..4), @results.pages
+  end
+
+  test "When no results, should be empty set of pages." do
+    when_current_page_is 1
+    and_the_max_number_pages_is 0
+    assert_equal [], @results.pages
+  end
+
+  test "With one page, return a single page." do
+    when_current_page_is 1
+    and_the_max_number_pages_is 1
+    assert_equal [], @results.pages, "A single page of results needs no pager control"
+  end
+
+  private
+
+  def and_the_max_number_pages_is(number)
+    @results.expects(:num_pages).returns(number).times(0..5)
+  end
+
+  def when_current_page_is(current_page)
+    @results.expects(:current_page).returns(current_page).times(0..5)
+  end
+end

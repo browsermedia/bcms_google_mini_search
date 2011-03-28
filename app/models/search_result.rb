@@ -146,11 +146,15 @@ class SearchResult
       previous_start >= 0 && num_pages > 1
     end
 
+    # Returns a range of pages that should appear in the pager control. This is design to mimic GSA's pager control,
+    # which will show up to 20 pages at a time, based on the 'range' of pages around the current page.
+    #
+    # i.e. on page 12:  < 2 3 4 5 6 7 8 9 10 11 _12_ 13 14 15 16 17 18 19 20 21 22 >
     def pages
-      if num_pages > 1
-        return (1..num_pages)
-      end
-      []
+      return [] if num_pages <= 1
+      first_page = current_page - 10 > 1 ? current_page - 10 : 1
+      last_page = current_page + 9 > num_pages ? num_pages : current_page + 9
+      (first_page..last_page)
     end
 
     def next_start

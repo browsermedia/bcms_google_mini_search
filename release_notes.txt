@@ -1,0 +1,26 @@
+v1.2.0
+======
+
+This release adds several refinements to the gmini module, including:
+
+* Better Paging - The results pages control now behaves like the test center does, where it shows a maximum of 20 page links, based on the 'current' page the user is on.
+*
+
+To Do
+=====
+Add the following features to this module.
+
+1. [Bug Fix] Handle encoding issues (&bull;) in titles. (Can't duplicate this currently)
+2. [Feature] Add the 'cached' link to search results.
+3. [Feature] Implement the 'Narrow your Search' feature.
+5. [Feature] Provide ability to sort result by page or relevance.
+
+Google Results Pager
+====================
+* Start with 1 - 9.
+* Add current page plus 9,
+* Show a maximum of 20 results, plus Previous and Next
+* Range is 10 previous, current, next 9
+CP =  11, range = 1 - 20
+CP = 1, range = 1-10
+CP = 12, range = 2 - 21
