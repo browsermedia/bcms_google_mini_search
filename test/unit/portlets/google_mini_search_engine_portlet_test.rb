@@ -16,10 +16,12 @@ class GoogleMiniSearchEngineTest < ActiveSupport::TestCase
   end
 
   test "Sort params" do
-    params = {:start => 10, :query => "X", :site=>'http://example.com', :sort=>"date:D:S:d1"}
+    params = {:start => 10, :query => "X", :site=>'default_collection', :sort=>"date:D:S:d1"}
     @portlet.expects('params').returns(params).at_least_once
-    SearchResult.expects(:find).with("X", {:start => 10, :portlet => nil, :site=>'http://example.com', :sort=>"date:D:S:d1"})
+    SearchResult.expects(:find).with("X", {:start => 10, :portlet => nil, :site=>'default_collection', :sort=>"date:D:S:d1"})
 
     @portlet.render
   end
+  
+
 end

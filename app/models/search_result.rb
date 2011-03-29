@@ -1,6 +1,5 @@
 class SearchResult
 
-  attr_accessor :number, :title, :url, :description, :size
 
   #
   # Queries google mini by a specific URL to find all the results. Converts XML results to
@@ -16,6 +15,17 @@ class SearchResult
     results
   end
 
+  def self.create_query(query, options={})
+    Rails.logger.warn "create_query called"
+    opts = options.clone
+    normalize_query_options(opts)
+    opts[:query] = query
+    opts[:engine] = GSA::Engine.new({:host => opts[:host]})
+    Rails.logger.warn "Host is #{opts[:host]}"
+    Rails.logger.warn "Engine's host is: #{opts[:engine].host}"
+    GSA::Query.new(opts)
+  end
+
   def self.parse_results_count(xml_doc)
     root = xml_doc.root
     count = root.elements["RES/M"]
@@ -26,16 +36,7 @@ class SearchResult
     root = xml_doc.root
     results = []
     xml_doc.elements.each('GSP/RES/R') do |ele|
-      result = SearchResult.new
-      result.number = ele.attributes["N"]
-      result.title = ele.elements["T"].text
-      result.url = ele.elements["U"].text
-      result.description = ele.elements["S"].text
-      
-      doc_size_ele = ele.elements["HAS/C"]
-      result.size = doc_size_ele ? doc_size_ele.attributes["SZ"] : ""
-
-      results << result
+      results << GSA::Result.new(ele)
     end
     results
   end
@@ -59,17 +60,23 @@ class SearchResult
     num_pages
   end
 
+  # Construct a query url for the GSA.
+  #
+  # @param [String] query
+  # @param [Hash] options
+  # @option :host
+  # @option :start
+  # @option :front_end
+  # @option :collection
+  # @option :sort
+  # @option :as_xml [Boolean] Determines if the results are returned as xml or html. Default to false.
+  def self.query_url(query, options)
+    options[:as_xml] = true if options[:as_xml].nil?
 
-  def self.build_mini_url(options, query)
-    portlet = find_search_engine_portlet(options)
     encoded_query = CGI::escape(query)
 
-    site = portlet.collection_name
-    if options[:site]
-      site = options[:site]
-    end
     # encoded_query = query
-    url = "#{portlet.service_url}/search?q=#{encoded_query}&output=xml_no_dtd&client=#{portlet.front_end_name}&site=#{site}&filter=0"
+    url = "#{options[:host]}/search?q=#{encoded_query}&output=xml_no_dtd&client=#{options[:front_end]}&site=#{options[:collection]}&filter=0"
     if options[:start]
       url = url + "&start=#{options[:start]}"
     end
@@ -78,13 +85,31 @@ class SearchResult
       url += "&sort=#{CGI::escape(options[:sort])}"
     end
 
-    return url    
+    unless options[:as_xml]
+      url += "&proxystylesheet=#{options[:front_end]}"
+    end
+    return url
+  end
+
+  def self.build_mini_url(options, query)
+    normalize_query_options(options)
+    return query_url(query, options)
+  end
+
+  def self.normalize_query_options(options)
+    portlet = find_search_engine_portlet(options)
+    Rails.logger.warn "Portlet found: #{portlet.inspect}"
+    options[:front_end] = portlet.front_end_name
+    options[:collection] = portlet.collection_name
+    options[:host] = portlet.service_url
+
+    options[:collection] = options.delete(:site) if options[:site]
   end
 
   def self.find_search_engine_portlet(options)
     portlet = GoogleMiniSearchEnginePortlet.new
     if options[:portlet]
-      portlet = options[:portlet]
+      portlet = options.delete(:portlet)
     end
     portlet
   end
@@ -94,7 +119,7 @@ class SearchResult
     # Turns off automatic results filter (filter=0), which when set to 1, allows mini to reduces the # of similar/duplicate results,
     # but makes it hard to determine the total # of results.
     url = build_mini_url(options, query)
-    Rails.logger.warn "Querying GSA/Mini @ #{url}"
+    Rails.logger.debug "Querying GSA/Mini @ #{url}"
     response = Net::HTTP.get(URI.parse(url))
     xml_doc = REXML::Document.new(response)
     return xml_doc

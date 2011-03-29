@@ -5,13 +5,13 @@ This release adds several refinements to the gmini module, including:
 
 * Better Paging - The results pages control now behaves like the test center does, where it shows a maximum of 20 page links, based on the 'current' page the user is on.
 * Sort by Date/Relevance - Users can now toggle the results display between date and relevance.
+* Caching - Each result now correctly generate a link to the cached version of the document as stored by the GSA.
 
-To Do
+ To Do
 =====
 Add the following features to this module.
 
 1. [Bug Fix] Handle encoding issues (&bull;) in titles. (Can't duplicate this currently)
-2. [Feature] Add the 'cached' link to search results.
 3. [Feature] Implement the 'Narrow your Search' feature.
 
 Google Results Pager

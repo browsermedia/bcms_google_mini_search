@@ -25,6 +25,8 @@ For '<%= @results.query %>', found <%= @results.results_count %> results. <br />
         <span class="search_result_description"><%= result.description %></span> <br />
         <span class="search_result_url"><%= result.url %></span> - 
         <span class="search_result_size"><%= result.size %></span>
+        <span class="search_result_cached"><%= link_to "Cached", result.cached_document_url(@query) %></span>
+
     </li>
   <% end %>
 </ul>

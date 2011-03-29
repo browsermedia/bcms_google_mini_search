@@ -247,6 +247,31 @@ EOF
 
   end
 
+  test "Create Engine and Query from portlet attributes" do
+    portlet = GoogleMiniSearchEnginePortlet.new(
+            :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
+            :collection_name => "COLLECT", :front_end_name => "FRONT_END")
+
+    query = SearchResult.create_query("therapy", {:portlet=>portlet})
+    assert_equal "http://mini.someurl.com", query.engine.host
+    assert_equal portlet.front_end_name, query.front_end
+    assert_equal portlet.collection_name, query.collection
+    assert_equal "therapy", query.query
+  end
+
+  test "should look up options from portlet and add to hash" do
+    portlet = GoogleMiniSearchEnginePortlet.new(
+            :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
+            :collection_name => "COLLECT", :front_end_name => "FRONT_END")
+    options = {:portlet=>portlet}
+    SearchResult.normalize_query_options(options)
+
+    assert_equal "FRONT_END", options[:front_end]
+    assert_equal "COLLECT", options[:collection]
+    assert_equal "http://mini.someurl.com", options[:host]
+    assert_equal nil, options[:portlet]
+  end
+
   test "Explicitly passing a collection in will query with that rather than a default collection" do
     portlet = GoogleMiniSearchEnginePortlet.new(
             :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
@@ -429,7 +454,6 @@ EOF
       assert_equal "BLURB 2", results[1].description
       assert_equal "", results[1].size
   end
-
 
 end
 
