@@ -13,7 +13,10 @@ module GSA
       self.default_collection = options[:collection]
     end
 
-
+    # Return a Hash suitable to be passed to SearchResult.find()
+    def options_for_query
+      {:host=>host, :front_end=>default_front_end, :collection=>default_collection}
+    end
   end
 
   # GSA support slightly different features than Google Mini.
@@ -40,14 +43,14 @@ module GSA
 
     # Returns the URL to GET a set of Dynamic Search Clusters for a particular query.
     def narrow_search_results_url(query)
-      "#{host}/cluster?coutput=xml&q=#{query}&site=#{default_collection}&client=#{default_front_end}&output=xml_no_dtd"
+      "#{host}/cluster?coutput=xml&q=#{CGI::escape(query)}&site=#{default_collection}&client=#{default_front_end}&output=xml_no_dtd"
     end
   end
 
   # Represents a set of suggested search terms, based on results from a GSA.
   # AKA DynamicResultClusters
   class SuggestedQueries
-    def initialize(xml_as_string)
+    def initialize(xml_as_string, appliance=nil)
       @clusters = []
       doc = REXML::Document.new(xml_as_string)
       doc.elements.each('toplevel/Response/cluster/gcluster') do |ele|
@@ -71,6 +74,7 @@ module GSA
       def initialize(query)
         self.query = query
       end
+
     end
   end
 

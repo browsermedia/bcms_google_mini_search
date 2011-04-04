@@ -478,6 +478,10 @@ class SearchPathsTest < ActiveSupport::TestCase
     @results.query = "X"
   end
 
+  test "path_for" do
+    assert_equal "/search/search-results?query=Y", @results.path_for("Y")
+  end
+  
   test "sort by date" do
     assert_equal "#{@results.path}?query=#{@results.query}&sort=#{SearchResult::QueryResult::SORT_BY_DATE_PARAM}", @results.sort_by_date_path
   end

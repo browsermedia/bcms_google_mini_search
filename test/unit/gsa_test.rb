@@ -17,6 +17,11 @@ class GSA::ApplianceTest < ActiveSupport::TestCase
     assert_equal "C", app.default_collection
   end
 
+  test "options_for_query" do
+    options = {:host=>"http://example.com", :front_end=>"F", :collection=>"C"}
+    app = GSA::Engine.new(options)
+    assert_equal options, app.options_for_query
+  end
 end
 
 class SuggestedQueries < ActiveSupport::TestCase
@@ -77,6 +82,11 @@ XML
   test "Google Search Appliances should generate the URL for Dynamic Results Clustering" do
     expected = "http://example.com/cluster?coutput=xml&q=TEST&site=My_Collection&client=My_Front&output=xml_no_dtd"
     assert_equal expected, @app.send(:narrow_search_results_url, "TEST")
+  end
+
+  test "URLs will escape queries" do
+    expected = "http://example.com/cluster?coutput=xml&q=TWO+WORDS&site=My_Collection&client=My_Front&output=xml_no_dtd"
+    assert_equal expected, @app.send(:narrow_search_results_url, "TWO WORDS")
   end
 
   test "find narrowed search results" do

@@ -12,6 +12,7 @@ class SearchResult
   # Queries google mini by a specific URL to find all the results. Converts XML results to
   # a paging results of Search Results.
   #
+  # See SearchResult#query_url for acceptable _options_ params
   def self.find(query, options={})
     return QueryResult.new unless query
     xml_doc = fetch_xml_doc(query, options)
@@ -28,8 +29,6 @@ class SearchResult
     normalize_query_options(opts)
     opts[:query] = query
     opts[:engine] = GSA::Engine.new({:host => opts[:host]})
-    Rails.logger.warn "Host is #{opts[:host]}"
-    Rails.logger.warn "Engine's host is: #{opts[:engine].host}"
     GSA::Query.new(opts)
   end
 
@@ -225,6 +224,10 @@ class SearchResult
     # @param [Hash] params The query parameter from the search page. (same as Rails params)
     def sorting_by_date?(params)
       params[:sort] == SearchResult::QueryResult::SORT_BY_DATE_PARAM
+    end
+
+    def path_for(new_query)
+      "#{path}?query=#{new_query}"
     end
     # Return the path to sort the current search results by date.
     #

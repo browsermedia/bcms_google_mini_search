@@ -39,7 +39,7 @@ For '<%= @results.query %>', found <%= @results.results_count %> results. <br/>
   <h3>Narrow your search</h3>
   <ul>
     <% @suggested_queries.each_with_index do |suggestion, i| %>
-    <li id="cluster_label<%= i %>"><%= suggestion.query %></li>
+    <li id="cluster_label<%= i %>"><%= link_to suggestion.query, @results.path_for(suggestion.query) %></li>
     <% end %>
   </ul>
 </div>
