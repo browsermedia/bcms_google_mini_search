@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<toplevel>
+  <Response>
+    <algorithm data="Concepts"/>
+    <t_cluster int="95"/>
+    <cluster>
+      <gcluster>
+        <label data="nonalcoholic fatty liver disease"/>
+      </gcluster>
+      <gcluster>
+        <label data="advanced liver disease"/>
+      </gcluster>
+      <gcluster>
+        <label data="liver disease patients"/>
+      </gcluster>
+      <gcluster>
+        <label data="chronic liver disease"/>
+      </gcluster>
+      <gcluster>
+        <label data="patients nonalcoholic fatty liver"/>
+      </gcluster>
+      <gcluster>
+        <label data="end stage liver disease"/>
+      </gcluster>
+      <gcluster>
+        <label data="cholestatic liver disease"/>
+      </gcluster>
+      <gcluster>
+        <label data="patients advanced liver disease"/>
+      </gcluster>
+      <gcluster>
+        <label data="safe patients advanced liver"/>
+      </gcluster>
+      <gcluster>
+        <label data="model end stage liver"/>
+      </gcluster>
+    </cluster>
+  </Response>
+</toplevel>
