@@ -68,6 +68,7 @@ module GSA
     end
 
 
+    # Since generating are handled in the view, this might no longer be necessary a separate class, and could probably be converted into a String.
     class Suggestion
       attr_accessor :query
 

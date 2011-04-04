@@ -23,6 +23,21 @@ class GoogleMiniSearchEngineTest < ActiveSupport::TestCase
 
     @portlet.render
   end
-  
+
+
+  test "Determine if Narrow Your Search is enabled?" do
+    @portlet.enable_narrow_your_search = "1"
+    assert_equal true, @portlet.narrow_your_search?
+
+    @portlet.enable_narrow_your_search = "0"
+    assert_equal false, @portlet.narrow_your_search?
+
+    @portlet.enable_narrow_your_search = ""
+    assert_equal false, @portlet.narrow_your_search?
+
+    @portlet.enable_narrow_your_search = nil
+    assert_equal false, @portlet.narrow_your_search?
+  end
+
 
 end

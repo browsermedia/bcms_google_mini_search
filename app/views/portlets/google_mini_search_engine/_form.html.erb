@@ -3,4 +3,6 @@
 <%= f.cms_text_field :service_url, :default_value=> "http://", :instructions => "Full Domain name where the Google Mini server is hosted, i.e. 'http://mini.somedomain.com'." %>
 <%= f.cms_text_field :collection_name, :instructions => "Copy the name of the Collection from Google Mini here. (Can pass 'site' param to override as well).", :default_value=>"default_collection" %>
 <%= f.cms_text_field :front_end_name, :instructions => "Copy the name of the Collection front end from Google Mini here.", :default_value=>"default_frontend" %>
+<%= f.cms_check_box :enable_narrow_your_search, :instructions => "The 'Narrow Your Search' feature is a only available for Google Search Appliance, not with Google Mini.",
+                    :label=>"Enable Narrowing?" %>
 <%= f.cms_template_editor :template %>

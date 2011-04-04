@@ -35,6 +35,7 @@ For '<%= @results.query %>', found <%= @results.results_count %> results. <br/>
   <% end %>
 </ul>
 
+<% if @portlet.narrow_your_search? %>
 <div id="clustering">
   <h3>Narrow your search</h3>
   <ul>
@@ -43,6 +44,7 @@ For '<%= @results.query %>', found <%= @results.results_count %> results. <br/>
     <% end %>
   </ul>
 </div>
+<% end %>
 
 <% if @results.previous_page? %><%= link_to h("< Back"), @results.previous_page_path %>
 <% end %>
