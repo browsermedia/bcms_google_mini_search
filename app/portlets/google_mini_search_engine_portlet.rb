@@ -14,7 +14,7 @@ class GoogleMiniSearchEnginePortlet < Portlet
     # to the query, so that two X calls isn't needed.
     @query = SearchResult.create_query(query_string, options.clone)
 
-    if !!self.enable_narrow_your_search
+    if narrow_your_search?
       @appliance = SearchResult.new_gsa(self)
       @suggested_queries = @appliance.find_narrow_search_results(query_string)
     end

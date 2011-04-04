@@ -34,6 +34,8 @@ module GSA
     # @param [String] query A term to fetch 'suggested' queries for/
     # @return [GSA::SuggestedQueries] A set of suggested queries
     def find_narrow_search_results(query)
+      return [] unless query
+
       url = narrow_search_results_url(query)
       document = SearchResult.fetch_document(url)
       SuggestedQueries.new(document)
@@ -50,7 +52,7 @@ module GSA
   # Represents a set of suggested search terms, based on results from a GSA.
   # AKA DynamicResultClusters
   class SuggestedQueries
-    def initialize(xml_as_string, appliance=nil)
+    def initialize(xml_as_string)
       @clusters = []
       doc = REXML::Document.new(xml_as_string)
       doc.elements.each('toplevel/Response/cluster/gcluster') do |ele|

@@ -119,6 +119,11 @@ XML
     end
     assert_equal suggestions.size, count
   end
+
+  test "A nil query should return an empty set of Suggested Queries" do
+    r = @app.find_narrow_search_results(nil)
+    assert_equal 0, r.size
+  end
 end
 
 class ResultsTest < ActiveSupport::TestCase

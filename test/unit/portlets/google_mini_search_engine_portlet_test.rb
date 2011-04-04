@@ -15,14 +15,18 @@ class GoogleMiniSearchEngineTest < ActiveSupport::TestCase
     assert_equal "/engine", portlet.path
   end
 
-  test "Sort params" do
-    params = {:start => 10, :query => "X", :site=>'default_collection', :sort=>"date:D:S:d1"}
-    @portlet.expects('params').returns(params).at_least_once
-    SearchResult.expects(:find).with("X", {:start => 10, :portlet => @portlet, :site=>'default_collection', :sort=>"date:D:S:d1"})
-    GSA::Appliance.any_instance.expects(:find_narrow_search_results).with("X")
+#  test "Sort params" do
+#    params = {:start => 10, :query => "X", :site=>'default_collection', :sort=>"date:D:S:d1"}
+#    @portlet.expects('params').returns(params).at_least_once
+#    SearchResult.expects(:find).with("X", {:start => 10, :portlet => @portlet, :site=>'default_collection', :sort=>"date:D:S:d1"})
+#
+#    @portlet.render
+#  end
 
-    @portlet.render
-  end
+#  test "Find narrow queries only if enabled" do
+#    GSA::Appliance.any_instance.expects(:find_narrow_search_results).with("X")
+#
+#  end
 
 
   test "Determine if Narrow Your Search is enabled?" do
@@ -40,4 +44,24 @@ class GoogleMiniSearchEngineTest < ActiveSupport::TestCase
   end
 
 
+end
+
+class RenderTest < ActiveSupport::TestCase
+  def setup
+    @portlet = GoogleMiniSearchEnginePortlet.new(:name=>"Engine", :path => "/engine")
+    @params = {:start => 10, :query => "X", :site=>'default_collection', :sort=>"date:D:S:d1"}
+    @portlet.expects('params').returns(@params).at_least_once
+  end
+
+  test "Sort params" do
+    SearchResult.expects(:find).with("X", {:start => 10, :portlet => @portlet, :site=>'default_collection', :sort=>"date:D:S:d1"})
+    @portlet.render
+  end
+
+  test "Find narrow queries only if enabled" do
+    @portlet.enable_narrow_your_search = "1"
+    GSA::Appliance.any_instance.expects(:find_narrow_search_results).with("X")
+    SearchResult.expects(:find).with("X", {:start => 10, :portlet => @portlet, :site=>'default_collection', :sort=>"date:D:S:d1"})
+    @portlet.render
+  end
 end
