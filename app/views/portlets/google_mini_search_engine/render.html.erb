@@ -1,37 +1,53 @@
+
 <h2>Search Results</h2>
-For '<%= @results.query %>', found <%= @results.results_count %> results. <br />
+For '<%= @results.query %>', found <%= @results.results_count %> results. <br/>
 <%= link_to_unless @results.sorting_by_date?(params), "Sort by Date", @results.sort_by_date_path %> /
-<%= link_to_if @results.sorting_by_date?(params), "Sort by Relevance", @results.sort_by_relevance_path %> <br />
-<% if @results.previous_page? %><%= link_to h("< Back"), @results.previous_page_path %><% end %>
-<% if @results.next_page? %><%= link_to h("Next >"), @results.next_page_path %><% end %>
+<%= link_to_if @results.sorting_by_date?(params), "Sort by Relevance", @results.sort_by_relevance_path %> <br/>
+<% if @results.previous_page? %><%= link_to h("< Back"), @results.previous_page_path %>
+<% end %>
+<% if @results.next_page? %><%= link_to h("Next >"), @results.next_page_path %>
+<% end %>
 <% if @results.key_matches? %>
     <ul class="key_matches">
-    <% @results.key_matches.each do |match| %>
-        <li><%= link_to match.title, match.url %></li>    
-    <% end %>
+      <% @results.key_matches.each do |match| %>
+          <li><%= link_to match.title, match.url %></li>
+      <% end %>
     </ul>
 <% end %>
 <% if @results.synonyms? %>
     <span class="synonyms">You could also try:
-    <% @results.synonyms.each do |synonym| %>
+      <% @results.synonyms.each do |synonym| %>
         <%= link_to synonym.label, synonym.url %>    
     <% end %>
     </span>
 <% end %>
 <ul class="search_results">
-  <% @results.each do |result|%>
-    <li>
-        <%= result.number %> <%= link_to result.title, result.url,  :class=>"search_result_title" %><br />
-        <span class="search_result_description"><%= result.description %></span> <br />
-        <span class="search_result_url"><%= result.url %></span> - 
+  <% @results.each do |result| %>
+      <li>
+        <%= result.number %> <%= link_to result.title, result.url, :class=>"search_result_title" %>
+        <br/>
+        <span class="search_result_description"><%= result.description %></span> <br/>
+        <span class="search_result_url"><%= result.url %></span> -
         <span class="search_result_size"><%= result.size %></span>
         <span class="search_result_cached"><%= link_to "Cached", result.cached_document_url(@query) %></span>
 
-    </li>
+      </li>
   <% end %>
 </ul>
-<% if @results.previous_page? %><%= link_to h("< Back"), @results.previous_page_path %><% end %>
-<%  @results.pages.each do |p| %>
-      <%= link_to_unless @results.current_page?(p), p, @results.page_path(p) %>
+
+<div id="clustering">
+  <h3>Narrow your search</h3>
+  <ul>
+    <% @suggested_queries.each_with_index do |suggestion, i| %>
+    <li id="cluster_label<%= i %>"><%= suggestion.query %></li>
+    <% end %>
+  </ul>
+</div>
+
+<% if @results.previous_page? %><%= link_to h("< Back"), @results.previous_page_path %>
 <% end %>
-<% if @results.next_page? %><%= link_to h("Next >"), @results.next_page_path %><% end %>
+<% @results.pages.each do |p| %>
+    <%= link_to_unless @results.current_page?(p), p, @results.page_path(p) %>
+<% end %>
+<% if @results.next_page? %><%= link_to h("Next >"), @results.next_page_path %>
+<% end %>

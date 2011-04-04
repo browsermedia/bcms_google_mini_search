@@ -18,7 +18,8 @@ class GoogleMiniSearchEngineTest < ActiveSupport::TestCase
   test "Sort params" do
     params = {:start => 10, :query => "X", :site=>'default_collection', :sort=>"date:D:S:d1"}
     @portlet.expects('params').returns(params).at_least_once
-    SearchResult.expects(:find).with("X", {:start => 10, :portlet => nil, :site=>'default_collection', :sort=>"date:D:S:d1"})
+    SearchResult.expects(:find).with("X", {:start => 10, :portlet => @portlet, :site=>'default_collection', :sort=>"date:D:S:d1"})
+    GSA::Appliance.any_instance.expects(:find_narrow_search_results).with("X")
 
     @portlet.render
   end

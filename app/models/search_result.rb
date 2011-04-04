@@ -1,5 +1,12 @@
 class SearchResult
 
+  # Creates a new GSA::Appliance from a GoogleMiniSearchPortlet.
+  #
+  def self.new_gsa(portlet)
+    options = {:portlet=>portlet}
+    normalize_query_options(options)
+    GSA::Appliance.new(options)
+  end
 
   #
   # Queries google mini by a specific URL to find all the results. Converts XML results to
@@ -75,7 +82,8 @@ class SearchResult
 
     encoded_query = CGI::escape(query)
 
-    # encoded_query = query
+    # Turns off automatic results filter (filter=0), which when set to 1, allows mini to reduces the # of similar/duplicate results,
+    # but makes it hard to determine the total # of results.
     url = "#{options[:host]}/search?q=#{encoded_query}&output=xml_no_dtd&client=#{options[:front_end]}&site=#{options[:collection]}&filter=0"
     if options[:start]
       url = url + "&start=#{options[:start]}"
@@ -91,7 +99,7 @@ class SearchResult
     return url
   end
 
-  def self.build_mini_url(options, query)
+  def self.create_url_for_query(options, query)
     normalize_query_options(options)
     return query_url(query, options)
   end
@@ -114,15 +122,18 @@ class SearchResult
     portlet
   end
 
+  # Given a URL, GET it and return the contents
+  # @param [String] url A URL formatted string
+  def self.fetch_document(url)
+    Net::HTTP.get(URI.parse(url))
+  end
+
   # Fetches the xml response from the google mini server.
   def self.fetch_xml_doc(query, options={})
-    # Turns off automatic results filter (filter=0), which when set to 1, allows mini to reduces the # of similar/duplicate results,
-    # but makes it hard to determine the total # of results.
-    url = build_mini_url(options, query)
+    url = create_url_for_query(options, query)
     Rails.logger.debug "Querying GSA/Mini @ #{url}"
-    response = Net::HTTP.get(URI.parse(url))
-    xml_doc = REXML::Document.new(response)
-    return xml_doc
+    response = fetch_document(url)
+    REXML::Document.new(response)
   end
 
   def self.parse_key_matches(xml_doc)
