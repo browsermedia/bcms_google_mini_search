@@ -1,6 +1,6 @@
 class GoogleMiniSearchEnginePortlet < Portlet
 
-  enable_template_editor false
+  enable_template_editor true
 
   def render
     @site = params[:site]
