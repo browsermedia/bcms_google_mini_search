@@ -8,6 +8,7 @@ It consists of the following two portlets.
 2. Google Mini Search Results Portlet - Sends query to the Mini, formats the XML response and displays the results.
 
 Features:
+
 1. Allows for formatted results of GSA search results.
 2. Will display Key Matches
 3. Will display Synonyms/Related Queries
