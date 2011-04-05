@@ -18,3 +18,11 @@ How Google Results Pager works
 CP =  11, range = 1 - 20
 CP = 1, range = 1-10
 CP = 12, range = 2 - 21
+
+v1.1
+====
+
+Adds the following features:
+
+* Displays Key Matches for queries
+* Display Synonyms for queries
