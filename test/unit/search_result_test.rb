@@ -241,10 +241,10 @@ EOF
             :collection_name => "COLLECT", :front_end_name => "FRONT_END")
 
     url = SearchResult.create_url_for_query({:portlet => portlet}, "STUFF")
-    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0", url
+    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&oe=UTF-8&ie=UTF-8", url
 
     url = SearchResult.create_url_for_query({:portlet => portlet, :start=>100}, "STUFF")
-    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&start=100", url
+    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&start=100&oe=UTF-8&ie=UTF-8", url
 
   end
 
@@ -290,22 +290,22 @@ EOF
             :collection_name => "COLLECT", :front_end_name => "FRONT_END")
 
     url = SearchResult.create_url_for_query({:portlet => portlet, :site=>"ANOTHER_COLLECTION"}, "STUFF")
-    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=ANOTHER_COLLECTION&filter=0", url
+    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=ANOTHER_COLLECTION&filter=0&oe=UTF-8&ie=UTF-8", url
   end
 
   test "Handles multiword queries" do
     url = SearchResult.create_url_for_query({}, "One Two")
-    assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0", url
+    assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0&oe=UTF-8&ie=UTF-8", url
   end
 
   test "sort is added to google mini query" do
     url = SearchResult.create_url_for_query({:sort=>"XYZ"}, "STUFF")
-    assert_equal "/search?q=STUFF&output=xml_no_dtd&client=&site=&filter=0&sort=XYZ", url
+    assert_equal "/search?q=STUFF&output=xml_no_dtd&client=&site=&filter=0&sort=XYZ&oe=UTF-8&ie=UTF-8", url
   end
 
   test "sort params are escaped" do
     url = SearchResult.create_url_for_query({:sort=>"date:D:S:d1"}, "STUFF")
-    assert_equal "/search?q=STUFF&output=xml_no_dtd&client=&site=&filter=0&sort=date%3AD%3AS%3Ad1", url
+    assert_equal "/search?q=STUFF&output=xml_no_dtd&client=&site=&filter=0&sort=date%3AD%3AS%3Ad1&oe=UTF-8&ie=UTF-8", url
   end
 
   test "Handles keymatches in results" do

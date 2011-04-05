@@ -45,7 +45,7 @@ module GSA
 
     # Returns the URL to GET a set of Dynamic Search Clusters for a particular query.
     def narrow_search_results_url(query)
-      "#{host}/cluster?coutput=xml&q=#{CGI::escape(query)}&site=#{default_collection}&client=#{default_front_end}&output=xml_no_dtd"
+      "#{host}/cluster?coutput=xml&q=#{CGI::escape(query)}&site=#{default_collection}&client=#{default_front_end}&output=xml_no_dtd&oe=UTF-8&ie=UTF-8"
     end
   end
 

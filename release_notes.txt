@@ -7,12 +7,7 @@ This release adds several refinements to the gmini/gsa module, including:
 * Sort by Date/Relevance - Users can now toggle the results display between date and relevance.
 * Caching - Each result now correctly generate a link to the cached version of the document as stored by the GSA.
 * Narrow Your Search - Shows users a set of other suggested queries to allow them to 'Narrow Your Search', based on the current query and what results are stored in GSA. Only available for GSA instances, as Google Mini does not support Dynamic Result Clustering.
-
- To Do
-=====
-Add the following features to this module.
-
-1. [Bug Fix] Handle encoding issues (&bull;) in titles, which show up in FireFox.
+* [Bug Fix] Queries and results are now interpreted as UTF-8. Should avoid weird encoding issues with results.
 
 How Google Results Pager works
 ====================

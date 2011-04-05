@@ -24,7 +24,6 @@ class SearchResult
   end
 
   def self.create_query(query, options={})
-    Rails.logger.warn "create_query called"
     opts = options.clone
     normalize_query_options(opts)
     opts[:query] = query
@@ -95,6 +94,10 @@ class SearchResult
     unless options[:as_xml]
       url += "&proxystylesheet=#{options[:front_end]}"
     end
+
+    # Ensure both results (oe) and query/input values (ie) are interpreted as UTF-8.
+    # See http://code.google.com/apis/searchappliance/documentation/46/xml_reference.html#request_i18n
+    url += "&oe=UTF-8&ie=UTF-8"
     return url
   end
 
@@ -105,7 +108,6 @@ class SearchResult
 
   def self.normalize_query_options(options)
     portlet = find_search_engine_portlet(options)
-    Rails.logger.warn "Portlet found: #{portlet.inspect}"
     options[:front_end] = portlet.front_end_name
     options[:collection] = portlet.collection_name
     options[:host] = portlet.service_url
@@ -124,13 +126,13 @@ class SearchResult
   # Given a URL, GET it and return the contents
   # @param [String] url A URL formatted string
   def self.fetch_document(url)
+    Rails.logger.debug {"GSA: Fetching '#{url}'"}
     Net::HTTP.get(URI.parse(url))
   end
 
   # Fetches the xml response from the google mini server.
   def self.fetch_xml_doc(query, options={})
     url = create_url_for_query(options, query)
-    Rails.logger.debug "Querying GSA/Mini @ #{url}"
     response = fetch_document(url)
     REXML::Document.new(response)
   end

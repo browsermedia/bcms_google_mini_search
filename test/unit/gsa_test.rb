@@ -80,12 +80,12 @@ XML
   end
 
   test "Google Search Appliances should generate the URL for Dynamic Results Clustering" do
-    expected = "http://example.com/cluster?coutput=xml&q=TEST&site=My_Collection&client=My_Front&output=xml_no_dtd"
+    expected = "http://example.com/cluster?coutput=xml&q=TEST&site=My_Collection&client=My_Front&output=xml_no_dtd&oe=UTF-8&ie=UTF-8"
     assert_equal expected, @app.send(:narrow_search_results_url, "TEST")
   end
 
   test "URLs will escape queries" do
-    expected = "http://example.com/cluster?coutput=xml&q=TWO+WORDS&site=My_Collection&client=My_Front&output=xml_no_dtd"
+    expected = "http://example.com/cluster?coutput=xml&q=TWO+WORDS&site=My_Collection&client=My_Front&output=xml_no_dtd&oe=UTF-8&ie=UTF-8"
     assert_equal expected, @app.send(:narrow_search_results_url, "TWO WORDS")
   end
 
@@ -176,7 +176,7 @@ XML
 
   test "cached_document_url" do
     @result.expects(:cached_document_param).returns("cache:something")
-    expected_url = "http://mini.someurl.com/search?q=cache%3Asomething&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&proxystylesheet=FRONT_END"
+    expected_url = "http://mini.someurl.com/search?q=cache%3Asomething&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&proxystylesheet=FRONT_END&oe=UTF-8&ie=UTF-8"
     assert_equal expected_url, @result.cached_document_url(@query)
   end
 end
