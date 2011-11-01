@@ -138,6 +138,21 @@ class ResultsTest < ActiveSupport::TestCase
     @query = GSA::Query.new(:engine=>@engine, :collection=>"COLLECT", :front_end=>"FRONT_END")
   end
 
+  test "Handles missing elements that we kinda expect to be there" do
+    xml = <<XML
+  <R N="1">
+    <HAS>
+      <C SZ="1k" CID="Ax1j5"/>
+    </HAS>
+  </R>
+XML
+    xml_doc = REXML::Document.new(xml)
+    result = GSA::Result.new(xml_doc.elements.first)
+    assert_nil result.url
+    assert_nil result.title
+    assert_nil result.description
+  end
+  
   test "Create result from xml" do
     xml = <<XML
   <R N="1">
