@@ -8,13 +8,12 @@ Gem::Specification.new do |s|
   s.authors = ["BrowserMedia"]
   s.email = %q{github@browsermedia.com}
   s.homepage = %q{http://github.com/browsermedia/bcms_google_mini_search}
-  s.description = %q{Allows developers to integrate Google Mini or Google Search Appliance into their CMS sites. Can be used to fetch search results and format them.}
+  s.description = %q{A Google Appliance modules for BrowserCMS. Used to display search results from a Google Mini/Search Appliance on a site.}
   s.summary = %q{A Google Mini Search Module for BrowserCMS}
   s.extra_rdoc_files = [
       "README.markdown"
     ]
   s.rdoc_options = ["--charset=UTF-8"]
-  s.rubygems_version = %q{1.3.7}
 
   s.rubyforge_project = "bcms_google_mini_search"
 
@@ -30,7 +29,6 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  # specify any dependencies here; for example:
   s.add_dependency(%q<browsercms>, ["~> 3.3.0"])
 end
 
