@@ -55,6 +55,12 @@ EOF
     
   end
 
+  test "fetch_xml_doc should download and parse the xml results from the GSA" do
+    SearchResult.expects(:build_mini_url).returns("http://example.com")
+    REXML::Document.expects(:new).returns("EXPECTED_RESULTS")
+    assert_equal "EXPECTED_RESULTS", SearchResult.fetch_xml_doc("")
+  end
+
   test "Parse result count from google mini results xml." do
 
     xml =  <<EOF
