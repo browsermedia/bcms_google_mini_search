@@ -19,7 +19,13 @@ Gem::Specification.new do |s|
   s.rubyforge_project = "bcms_google_mini_search"
 
   s.files         = `git ls-files`.split("\n")
-  s.files         -= Dir['config/*']
+  # Exclude files required for the 'dummy' Rails app
+  s.files         -= Dir['config/**/*', 'public/**/*', 'config.ru', 'db/**/*', 'script/**/*',
+                         'app/controllers/application_controller.rb',
+                         'app/helpers/application_helper.rb',
+                         'app/layouts/templates/**/*'
+
+  ]
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
