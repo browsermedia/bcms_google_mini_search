@@ -14,7 +14,6 @@ Gem::Specification.new do |s|
       "README.markdown"
     ]
   s.rdoc_options = ["--charset=UTF-8"]
-
   s.rubyforge_project = "bcms_google_mini_search"
 
   s.files         = `git ls-files`.split("\n")

@@ -1,5 +1,6 @@
 require 'test_helper'
 
+
 class SearchResultTest < ActiveSupport::TestCase
 
   def setup
@@ -56,8 +57,9 @@ EOF
   end
 
   test "fetch_xml_doc should download and parse the xml results from the GSA" do
-    SearchResult.expects(:build_mini_url).returns("http://example.com")
-    REXML::Document.expects(:new).returns("EXPECTED_RESULTS")
+    SearchResult.expects(:create_url_for_query).returns("http://example.com")
+    SearchResult.expects(:fetch_document).with("http://example.com").returns(nil)
+    REXML::Document.expects(:new).with(nil).returns("EXPECTED_RESULTS")
     assert_equal "EXPECTED_RESULTS", SearchResult.fetch_xml_doc("")
   end
 
@@ -211,14 +213,7 @@ EOF
     assert_equal [], results.pages
   end
 
-  test "Behavior of ranges" do
-    c = 0
-    (1..4).each_with_index do |i, count|
-      assert_equal count + 1, i
-      c = count
-    end
-    assert_equal 3, c
-  end
+
 
   test "current_page should check to see if the current page matches" do
     results = SearchResult::QueryResult.new
@@ -231,45 +226,6 @@ EOF
 
   end
 
-  test "Path to next page" do
-    results = SearchResult::QueryResult.new
-    results.start = 0
-    results.path = "/search/search-results"
-    results.query = "X"
-
-    assert_equal "/search/search-results?query=X&start=10", results.next_page_path
-  end
-
-  test "Path to previous page" do
-    results = SearchResult::QueryResult.new
-    results.start = 20
-    results.path = "/search/search-results"
-    results.query = "X"
-
-    assert_equal "/search/search-results?query=X&start=10", results.previous_page_path
-  end
-
-  test "Sets path to default search-results" do
-    results = SearchResult::QueryResult.new
-    assert_equal "/search/search-results", results.path
-  end
-
-  test "Setting path overrides the defaults" do
-    results = SearchResult::QueryResult.new
-    results.path = "/other"
-    assert_equal "/other", results.path
-  end
-
-  test "page_path" do
-    results = SearchResult::QueryResult.new
-    results.query = "X"
-
-    assert_equal "/search/search-results?query=X&start=0", results.page_path(1)
-    assert_equal "/search/search-results?query=X&start=10", results.page_path(2)
-    assert_equal "/search/search-results?query=X&start=20", results.page_path(3)
-    assert_equal "/search/search-results?query=X&start=30", results.page_path(4)
-
-  end
 
   test "Portlet attributes are used to look up path" do
     portlet = GoogleMiniSearchEnginePortlet.new(:name=>"Engine", :path => "/engine")
@@ -291,12 +247,48 @@ EOF
             :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
             :collection_name => "COLLECT", :front_end_name => "FRONT_END")
 
-    url = SearchResult.build_mini_url({:portlet => portlet}, "STUFF")
-    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0", url
+    url = SearchResult.create_url_for_query({:portlet => portlet}, "STUFF")
+    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&oe=UTF-8&ie=UTF-8", url
 
-    url = SearchResult.build_mini_url({:portlet => portlet, :start=>100}, "STUFF")
-    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&start=100", url
+    url = SearchResult.create_url_for_query({:portlet => portlet, :start=>100}, "STUFF")
+    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&start=100&oe=UTF-8&ie=UTF-8", url
 
+  end
+
+  test "Create Engine and Query from portlet attributes" do
+    portlet = GoogleMiniSearchEnginePortlet.new(
+            :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
+            :collection_name => "COLLECT", :front_end_name => "FRONT_END")
+
+    query = SearchResult.create_query("therapy", {:portlet=>portlet})
+    assert_equal "http://mini.someurl.com", query.engine.host
+    assert_equal portlet.front_end_name, query.front_end
+    assert_equal portlet.collection_name, query.collection
+    assert_equal "therapy", query.query
+  end
+
+  test "should look up options from portlet and add to hash" do
+    portlet = GoogleMiniSearchEnginePortlet.new(
+            :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
+            :collection_name => "COLLECT", :front_end_name => "FRONT_END")
+    options = {:portlet=>portlet}
+    SearchResult.normalize_query_options(options)
+
+    assert_equal "FRONT_END", options[:front_end]
+    assert_equal "COLLECT", options[:collection]
+    assert_equal "http://mini.someurl.com", options[:host]
+    assert_equal nil, options[:portlet]
+  end
+
+  test "Create an appliance from attributes in the portlet." do
+    portlet = GoogleMiniSearchEnginePortlet.new(
+            :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
+            :collection_name => "COLLECT", :front_end_name => "FRONT_END")
+
+    gsa = SearchResult.new_gsa(portlet)
+    assert_equal "http://mini.someurl.com", gsa.host
+    assert_equal "FRONT_END", gsa.default_front_end
+    assert_equal "COLLECT", gsa.default_collection
   end
 
   test "Explicitly passing a collection in will query with that rather than a default collection" do
@@ -304,13 +296,23 @@ EOF
             :name=>"Engine", :path => "/engine", :service_url => "http://mini.someurl.com",
             :collection_name => "COLLECT", :front_end_name => "FRONT_END")
 
-    url = SearchResult.build_mini_url({:portlet => portlet, :site=>"ANOTHER_COLLECTION"}, "STUFF")
-    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=ANOTHER_COLLECTION&filter=0", url
+    url = SearchResult.create_url_for_query({:portlet => portlet, :site=>"ANOTHER_COLLECTION"}, "STUFF")
+    assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=ANOTHER_COLLECTION&filter=0&oe=UTF-8&ie=UTF-8", url
   end
 
   test "Handles multiword queries" do
-    url = SearchResult.build_mini_url({}, "One Two")
-    assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0", url
+    url = SearchResult.create_url_for_query({}, "One Two")
+    assert_equal "/search?q=One+Two&output=xml_no_dtd&client=&site=&filter=0&oe=UTF-8&ie=UTF-8", url
+  end
+
+  test "sort is added to google mini query" do
+    url = SearchResult.create_url_for_query({:sort=>"XYZ"}, "STUFF")
+    assert_equal "/search?q=STUFF&output=xml_no_dtd&client=&site=&filter=0&sort=XYZ&oe=UTF-8&ie=UTF-8", url
+  end
+
+  test "sort params are escaped" do
+    url = SearchResult.create_url_for_query({:sort=>"date:D:S:d1"}, "STUFF")
+    assert_equal "/search?q=STUFF&output=xml_no_dtd&client=&site=&filter=0&sort=date%3AD%3AS%3Ad1&oe=UTF-8&ie=UTF-8", url
   end
 
   test "Handles keymatches in results" do
@@ -470,5 +472,123 @@ EOF
       assert_equal "TITLE 2", results[1].title
       assert_equal "BLURB 2", results[1].description
       assert_equal "", results[1].size
+  end
+
+end
+
+class SearchPathsTest < ActiveSupport::TestCase
+
+  def setup
+    @results = SearchResult::QueryResult.new
+    @results.start = 0
+    @results.path = "/search/search-results"
+    @results.query = "X"
+  end
+
+  test "path_for" do
+    assert_equal "/search/search-results?query=Y", @results.path_for("Y")
+  end
+  
+  test "sort by date" do
+    assert_equal "#{@results.path}?query=#{@results.query}&sort=#{SearchResult::QueryResult::SORT_BY_DATE_PARAM}", @results.sort_by_date_path
+  end
+
+  test "sort by relevance" do
+    assert  @results.sort_by_relevance_path != @results.sort_by_date_path, "Paths should not be the same."
+    assert_equal "#{@results.path}?query=#{@results.query}&sort=#{SearchResult::QueryResult::SORT_BY_RELEVANCE_PARAM}", @results.sort_by_relevance_path
+  end
+
+  test "Path to next page" do
+    assert_equal "/search/search-results?query=X&start=10", @results.next_page_path
+  end
+
+  test "Path to previous page" do
+    @results.start = 20
+    assert_equal "/search/search-results?query=X&start=10", @results.previous_page_path
+  end
+
+  test "Sets path to default search-results" do
+    assert_equal "/search/search-results", @results.path
+  end
+
+  test "Setting path overrides the defaults" do
+    @results.path = "/other"
+    assert_equal "/other", @results.path
+  end
+
+  test "page_path" do
+    assert_equal "/search/search-results?query=X&start=0", @results.page_path(1)
+    assert_equal "/search/search-results?query=X&start=10", @results.page_path(2)
+    assert_equal "/search/search-results?query=X&start=20", @results.page_path(3)
+    assert_equal "/search/search-results?query=X&start=30", @results.page_path(4)
+  end
+
+  test "sorting_by_date?" do
+    assert_equal true, @results.sorting_by_date?({:sort=>SearchResult::QueryResult::SORT_BY_DATE_PARAM})
+    assert_equal false, @results.sorting_by_date?({:sort=>SearchResult::QueryResult::SORT_BY_RELEVANCE_PARAM})
+    assert_equal false, @results.sorting_by_date?({})
+  end
+end
+
+
+class PagingTest < ActiveSupport::TestCase
+
+  def setup
+    @results = SearchResult::QueryResult.new
+    and_the_max_number_pages_is 100
+  end
+
+  test "Behavior of Ruby Ranges" do
+      c = 0
+      (1..4).each_with_index do |i, count|
+        assert_equal count + 1, i
+        c = count
+      end
+      assert_equal 3, c
     end
+
+
+  test "When on page 1, show links for pages 1 - 10" do
+    when_current_page_is(1)
+    assert_equal (1..10), @results.pages
+  end
+
+  test "When on page 11, show links for pages 1-20" do
+    when_current_page_is(11)
+    assert_equal (1..20), @results.pages
+  end
+
+  test "When on page 12, show links for pages 2-22" do
+    when_current_page_is 12
+    assert_equal (2..21), @results.pages
+  end
+
+  test "When less than 10 pages only show up to last page" do
+    when_current_page_is 1
+    and_the_max_number_pages_is 4
+
+    assert_equal (1..4), @results.pages
+  end
+
+  test "When no results, should be empty set of pages." do
+    when_current_page_is 1
+    and_the_max_number_pages_is 0
+    assert_equal [], @results.pages
+  end
+
+  test "With one page, return a single page." do
+    when_current_page_is 1
+    and_the_max_number_pages_is 1
+    assert_equal [], @results.pages, "A single page of results needs no pager control"
+  end
+
+  private
+
+  def and_the_max_number_pages_is(number)
+    @results.expects(:num_pages).returns(number).times(0..5)
+  end
+
+  def when_current_page_is(current_page)
+    @results.expects(:current_page).returns(current_page).times(0..5)
+  end
 end

@@ -8,10 +8,14 @@ It consists of the following two portlets.
 2. Google Mini Search Results Portlet - Sends query to the Mini, formats the XML response and displays the results.
 
 Features:
+
 1. Allows for formatted results of GSA search results.
-2. Will display Key Matches (as of 1.1)
-3. Will display Synonyms/Related Queries (as of 1.1)
-4. Allows conditional overriding of collections (i.e. by default it will search one collection, but a 'site=OTHER_COLLECTION' param can be passed to override that)
+2. Will display Key Matches
+3. Will display Synonyms/Related Queries
+4. Allows conditional overriding of collections (i.e. by default it will search one default collection, but a 'site=OTHER_COLLECTION' param can be passed to override that)
+5. Sort by Date/Relevance - Users can now toggle the results display between date and relevance.
+6. Cached Links - Each result now correctly generate a link to the cached version of the document as stored by the GSA.
+7. [GSA Only] Narrow Your Search - Shows users a set of other suggested queries to allow them to 'Narrow Your Search', based on the current query and what results are stored in GSA. Only available for GSA instances, as Google Mini does not support Dynamic Result Clustering.
 
 Note: This module assume the BrowserCMS web site owner has access to their own GSA/Google Mini server, either hosted by
 themselves or a third party service.

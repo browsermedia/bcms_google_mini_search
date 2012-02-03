@@ -3,12 +3,19 @@ require 'net/http'
 
 class SearchResult
 
-  attr_accessor :number, :title, :url, :description, :size
+  # Creates a new GSA::Appliance from a GoogleMiniSearchPortlet.
+  #
+  def self.new_gsa(portlet)
+    options = {:portlet=>portlet}
+    normalize_query_options(options)
+    GSA::Appliance.new(options)
+  end
 
   #
   # Queries google mini by a specific URL to find all the results. Converts XML results to
   # a paging results of Search Results.
   #
+  # See SearchResult#query_url for acceptable _options_ params
   def self.find(query, options={})
     return QueryResult.new unless query
     xml_doc = fetch_xml_doc(query, options)
@@ -17,6 +24,14 @@ class SearchResult
     portlet = find_search_engine_portlet(options)
     results.path = portlet.path 
     results
+  end
+
+  def self.create_query(query, options={})
+    opts = options.clone
+    normalize_query_options(opts)
+    opts[:query] = query
+    opts[:engine] = GSA::Engine.new({:host => opts[:host]})
+    GSA::Query.new(opts)
   end
 
   def self.parse_results_count(xml_doc)
@@ -29,16 +44,7 @@ class SearchResult
     root = xml_doc.root
     results = []
     xml_doc.elements.each('GSP/RES/R') do |ele|
-      result = SearchResult.new
-      result.number = ele.attributes["N"]
-      result.title = ele.elements["T"].text
-      result.url = ele.elements["U"].text
-      result.description = ele.elements["S"].text
-      
-      doc_size_ele = ele.elements["HAS/C"]
-      result.size = doc_size_ele ? doc_size_ele.attributes["SZ"] : ""
-
-      results << result
+      results << GSA::Result.new(ele)
     end
     results
   end
@@ -62,39 +68,76 @@ class SearchResult
     num_pages
   end
 
+  # Construct a query url for the GSA.
+  #
+  # @param [String] query
+  # @param [Hash] options
+  # @option :host
+  # @option :start
+  # @option :front_end
+  # @option :collection
+  # @option :sort
+  # @option :as_xml [Boolean] Determines if the results are returned as xml or html. Default to false.
+  def self.query_url(query, options)
+    options[:as_xml] = true if options[:as_xml].nil?
 
-  def self.build_mini_url(options, query)
-    portlet = find_search_engine_portlet(options)
     encoded_query = CGI::escape(query)
 
-    site = portlet.collection_name
-    if options[:site]
-      site = options[:site]
-    end
-    # encoded_query = query
-    url = "#{portlet.service_url}/search?q=#{encoded_query}&output=xml_no_dtd&client=#{portlet.front_end_name}&site=#{site}&filter=0"
+    # Turns off automatic results filter (filter=0), which when set to 1, allows mini to reduces the # of similar/duplicate results,
+    # but makes it hard to determine the total # of results.
+    url = "#{options[:host]}/search?q=#{encoded_query}&output=xml_no_dtd&client=#{options[:front_end]}&site=#{options[:collection]}&filter=0"
     if options[:start]
       url = url + "&start=#{options[:start]}"
     end
-    return url    
+
+    if options[:sort]
+      url += "&sort=#{CGI::escape(options[:sort])}"
+    end
+
+    unless options[:as_xml]
+      url += "&proxystylesheet=#{options[:front_end]}"
+    end
+
+    # Ensure both results (oe) and query/input values (ie) are interpreted as UTF-8.
+    # See http://code.google.com/apis/searchappliance/documentation/46/xml_reference.html#request_i18n
+    url += "&oe=UTF-8&ie=UTF-8"
+    return url
+  end
+
+  def self.create_url_for_query(options, query)
+    normalize_query_options(options)
+    return query_url(query, options)
+  end
+
+  def self.normalize_query_options(options)
+    portlet = find_search_engine_portlet(options)
+    options[:front_end] = portlet.front_end_name
+    options[:collection] = portlet.collection_name
+    options[:host] = portlet.service_url
+
+    options[:collection] = options.delete(:site) if options[:site]
   end
 
   def self.find_search_engine_portlet(options)
     portlet = GoogleMiniSearchEnginePortlet.new
     if options[:portlet]
-      portlet = options[:portlet]
+      portlet = options.delete(:portlet)
     end
     portlet
   end
 
+  # Given a URL, GET it and return the contents
+  # @param [String] url A URL formatted string
+  def self.fetch_document(url)
+    Rails.logger.debug {"GSA: Fetching '#{url}'"}
+    Net::HTTP.get(URI.parse(url))
+  end
+
   # Fetches the xml response from the google mini server.
   def self.fetch_xml_doc(query, options={})
-    # Turns off automatic results filter (filter=0), which when set to 1, allows mini to reduces the # of similar/duplicate results,
-    # but makes it hard to determine the total # of results.
-    url = build_mini_url(options, query)
-    response = Net::HTTP.get(URI.parse(url))
-    xml_doc = REXML::Document.new(response)
-    return xml_doc
+    url = create_url_for_query(options, query)
+    response = fetch_document(url)
+    REXML::Document.new(response)
   end
 
   def self.parse_key_matches(xml_doc)
@@ -125,6 +168,10 @@ class SearchResult
     attr_accessor :results_count, :num_pages, :current_page, :start, :query, :pages, :key_matches, :synonyms
     attr_writer :path
 
+    # For what these codes mean, see http://code.google.com/apis/searchappliance/documentation/46/xml_reference.html#request_sort
+    SORT_BY_DATE_PARAM = "date:D:S:d1"
+    SORT_BY_RELEVANCE_PARAM = "date:D:L:d1"
+
     def initialize(array=[])
       # Need to set defaults so an empty result set works.
       self.start = 0
@@ -149,11 +196,15 @@ class SearchResult
       previous_start >= 0 && num_pages > 1
     end
 
+    # Returns a range of pages that should appear in the pager control. This is design to mimic GSA's pager control,
+    # which will show up to 20 pages at a time, based on the 'range' of pages around the current page.
+    #
+    # i.e. on page 12:  < 2 3 4 5 6 7 8 9 10 11 _12_ 13 14 15 16 17 18 19 20 21 22 >
     def pages
-      if num_pages > 1
-        return (1..num_pages)
-      end
-      []
+      return [] if num_pages <= 1
+      first_page = current_page - 10 > 1 ? current_page - 10 : 1
+      last_page = current_page + 9 > num_pages ? num_pages : current_page + 9
+      (first_page..last_page)
     end
 
     def next_start
@@ -171,6 +222,28 @@ class SearchResult
     def current_page
       return page = start / 10 + 1 if start
       1
+    end
+
+    # Determines the current Query is sorting by date.
+    #
+    # @param [Hash] params The query parameter from the search page. (same as Rails params)
+    def sorting_by_date?(params)
+      params[:sort] == SearchResult::QueryResult::SORT_BY_DATE_PARAM
+    end
+
+    def path_for(new_query)
+      "#{path}?query=#{new_query}"
+    end
+    # Return the path to sort the current search results by date.
+    #
+    # Based on http://code.google.com/apis/searchappliance/documentation/46/xml_reference.html#request_sort
+    def sort_by_date_path
+      "#{path}?query=#{query}&sort=#{SORT_BY_DATE_PARAM}"
+    end
+
+    # Returns the path to sort the current results by relevance (inverse of sort_by_date_path).
+    def sort_by_relevance_path
+      "#{path}?query=#{query}&sort=#{SORT_BY_RELEVANCE_PARAM}"
     end
 
     def next_page_path
