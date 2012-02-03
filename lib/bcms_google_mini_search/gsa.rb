@@ -112,9 +112,9 @@ module GSA
     def initialize(xml_element = nil)
       return if xml_element == nil
       self.number = xml_element.attributes["N"]
-      self.title = xml_element.elements["T"].text
-      self.url = xml_element.elements["U"].text
-      self.description = xml_element.elements["S"].text
+      self.title = xml_element.elements["T"].try(:text)
+      self.url = xml_element.elements["U"].try(:text)
+      self.description = xml_element.elements["S"].try(:text)
 
       cache_element = xml_element.elements["HAS/C"]
 

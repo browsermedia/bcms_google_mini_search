@@ -1,6 +1,7 @@
 require 'test_helper'
 
 
+
 class SearchResultTest < ActiveSupport::TestCase
 
   def setup
@@ -252,8 +253,8 @@ EOF
 
     url = SearchResult.create_url_for_query({:portlet => portlet, :start=>100}, "STUFF")
     assert_equal "http://mini.someurl.com/search?q=STUFF&output=xml_no_dtd&client=FRONT_END&site=COLLECT&filter=0&start=100&oe=UTF-8&ie=UTF-8", url
-
   end
+
 
   test "Create Engine and Query from portlet attributes" do
     portlet = GoogleMiniSearchEnginePortlet.new(

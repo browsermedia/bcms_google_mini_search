@@ -55,4 +55,3 @@ pages(:home).publish!
 puts "*************************************************"    
 puts "* YOUR CMS username/password is: cmsadmin/#{pwd}"    
 puts "*************************************************"
-        
