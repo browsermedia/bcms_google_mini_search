@@ -24,7 +24,7 @@ For '<%= @results.query %>', found <%= @results.results_count %> results. <br/>
 <ul class="search_results">
   <% @results.each do |result|%>
     <li>
-        <%= result.number %> <%= link_to result.title, result.url,  :class=>"search_result_title" %><br />
+        <%= result.number %> <%= link_to result.title.try(:html_safe), result.url,  :class=>"search_result_title" %><br />
         <span class="search_result_description"><%= result.description.try(:html_safe) %></span> <br />
         <span class="search_result_url"><%= result.url %></span> - 
         <span class="search_result_size"><%= result.size %></span>

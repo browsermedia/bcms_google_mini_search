@@ -14,20 +14,19 @@ Gem::Specification.new do |s|
       "README.markdown"
     ]
   s.rdoc_options = ["--charset=UTF-8"]
-  s.rubyforge_project = "bcms_google_mini_search"
+  s.rubyforge_project = s.name
 
-  s.files         = `git ls-files`.split("\n")
-  # Exclude files required for the 'dummy' Rails app
-  s.files         -= Dir['config/**/*', 'public/**/*', 'config.ru', 'db/**/*', 'script/**/*',
-                         'app/controllers/application_controller.rb',
-                         'app/helpers/application_helper.rb',
-                         'app/layouts/templates/**/*'
+  s.files = Dir["{app,config,db,lib}/**/*"]
+  s.files += Dir["app/**/*"]
+  s.files += Dir["config/**/*"]
+  s.files += Dir["db/**/*"]
+  s.files += Dir["lib/**/*"] 
+  s.files += Dir["Gemfile", "LICENSE.txt", "COPYRIGHT.txt", "GPL.txt", "release_notes.txt" ]
 
-  ]
-  s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
-  s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
+  s.test_files += Dir["test/**/*"]
+  s.test_files -= Dir['test/dummy/**/*']
   s.require_paths = ["lib"]
-  s.add_dependency(%q<browsercms>, ["~> 3.3.0"])
+  s.add_dependency("browsercms", "< 3.6.0", ">= 3.5.0.rc2")
 end
 
 

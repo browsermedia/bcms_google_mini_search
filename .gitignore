@@ -10,3 +10,6 @@ tmp/restart.txt
 public/cache
 .idea/*
 Gemfile.lock
+test/dummy/.sass-cache
+test/dummy/public/cache
+test/dummy/tmp/cache

@@ -1,3 +1,8 @@
+v1.4.0
+======
+
+* Make compatible with CMS v3.5.x
+
 v1.3.1
 ======
 

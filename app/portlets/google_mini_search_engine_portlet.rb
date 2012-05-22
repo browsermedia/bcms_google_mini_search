@@ -1,4 +1,4 @@
-class GoogleMiniSearchEnginePortlet < Portlet
+class GoogleMiniSearchEnginePortlet < Cms::Portlet
 
   enable_template_editor true
 

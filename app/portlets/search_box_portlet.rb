@@ -1,4 +1,4 @@
-class SearchBoxPortlet < Portlet
+class SearchBoxPortlet < Cms::Portlet
     
   def render
     @search_engine = GoogleMiniSearchEnginePortlet.find_by_name(@portlet.search_engine_name)
