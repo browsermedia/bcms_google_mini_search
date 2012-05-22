@@ -21,16 +21,22 @@ Note: This module assume the BrowserCMS web site owner has access to their own G
 themselves or a third party service.
 
 ## A. Instructions
-There are two basic steps to setting up this module:
+
+Installing this module is done much like other BrowserCMS modules:
+
+```
+$ rails g cms:install bcms_google_mini_search
+```
+
+After that, you will need to to: 
 
 1. Configure your Google Mini to crawl your site.
-2. Install the module and configure it to point to your Google Mini server.
+2. Configure the module to point to your Google Mini server.
 
-These instructions assume the Mini is already set up and running.
+These instructions assume the Mini or Google Search Appliance is already set up and running.
 
 ### B. Configuring Google Mini
-Configuring the mini include three basic steps, configuring it to crawl your site, creating a collection which limits
-what is returned to just your site, and creating a front end, which allows you to submit search queries.
+Configuring the mini include three basic steps, configuring it to crawl your site, creating a collection which limits what is returned to just your site, and creating a front end, which allows you to submit search queries.
 
 #### B.1. Configuring the crawler
 1. Log into your search appliance (i.e. http://google.mini.mysite.com), and enter your account username/password.
@@ -59,8 +65,8 @@ the Mini's default search UI, you can click the 'Test Center' link in the upper 
 collection and front end by name, and submit queries.
 
 ### C. Configuring the BrowserCMS Google Mini Search Module
-These instructions assume you have successfully installed the bcms_google_mini_search module into your project. To make
-the module work, you will have to configure two portlets.
+
+To make the module work, you will have to configure two portlets.
 
 1. In your sitemap, create a new section called 'Search', with a path '/search'.
 2. Create a page called 'Search Results', with a path '/search/search-results'.
@@ -74,6 +80,4 @@ the module work, you will have to configure two portlets.
 10. Set the 'Search Engine Name' field to the exact same name as the portlet in step C.3 above (i.e. Google Mini Search Engine)
 11. Save the portlet
 
-At this point, you can test the search by entering in a term to the Search Box portlet. If its working, it should call
-the Search Results page and display the same results as what you see in the Mini 'Test Center'. You can style the HTML in
-the template to tweak how your search results will work.
+At this point, you can test the search by entering in a term to the Search Box portlet. If its working, it should call the Search Results page and display the same results as what you see in the Mini 'Test Center'. You can style the HTML in the template to tweak how your search results will work.
